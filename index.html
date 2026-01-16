@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>경영 시뮬레이션</title>
+    <style>
+        :root {
+            --bg: #f8f9fa; --card: #ffffff; --primary: #9fa8da; --secondary: #a5d6a7;
+            --danger: #ef9a9a; --warning: #ffe082; --info: #90caf9; --text: #455a64; --border: #eceff1;
+        }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; line-height: 1.5; }
+        .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+        @media (min-width: 1024px) { .container { display: grid; grid-template-columns: 1.6fr 1fr; align-items: start; } }
+        .card { background: var(--card); padding: 15px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid var(--border); margin-bottom: 10px; }
+        header { text-align: center; margin-bottom: 10px; }
+        .company-name { font-size: 1.8rem; font-weight: 800; color: #7986cb; border: none; background: transparent; text-align: center; width: 100%; outline: none; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 10px; overflow-x: auto; }
+        .tab-btn { background: #cfd8dc; color: #546e7a; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-weight: bold; border: none; flex: 1; transition: 0.3s; white-space: nowrap; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+        .char-item { border: 1px solid var(--border); padding: 15px; border-radius: 16px; background: #fff; cursor: pointer; transition: 0.2s; position: relative; }
+        .char-item:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
+        .stat-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; font-size: 0.85rem; }
+        .stat-tag { background: #fafafa; padding: 4px 8px; border-radius: 8px; display: flex; justify-content: space-between; border: 1px solid #f5f5f5; }
+        .stat-label { color: #90a4ae; } .stat-val { color: #7986cb; font-weight: 700; }
+        .status-bar-group { margin-top: 12px; }
+        .status-bar { height: 8px; background: #eceff1; border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
+        .status-fill { height: 100%; transition: width 0.6s ease; }
+        #log-container { height: 500px; overflow-y: auto; font-size: 0.85rem; background: #ffffff; padding: 15px; border-radius: 16px; border: 1px solid var(--border); }
+        .log-entry { padding: 8px; border-bottom: 1px solid #f8f9fa; border-left: 4px solid #eceff1; margin-bottom: 4px; }
+        .log-battle { background: #fff9c4; border-left-color: #fbc02d; font-weight: bold; }
+        .log-danger { background: #ffebee; border-left-color: var(--danger); }
+        .log-info { background: #e8f5e9; border-left-color: var(--secondary); }
+        .btn-group { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+        button { cursor: pointer; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 600; flex: 1; }
+        .btn-skip { background: var(--secondary); margin-top: 5px; }
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; z-index: 100; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:99; backdrop-filter: blur(2px); }
+        .guide-box { font-size: 0.85rem; color: #78909c; margin-top: 20px; padding: 15px; background: #f1f8e9; border-radius: 12px; border: 1px solid #c5e1a5; }
+        .guide-box h4 { margin-top: 0; color: #558b2f; }
+        .guide-box ul { padding-left: 20px; margin-bottom: 0; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <input type="text" id="company-name-input" class="company-name" value="회사" onchange="saveLocal()">
+    </header>
+    
+    <div class="container">
+        <div>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openTab('main-tab', this)">👥 사원</button>
+                <button class="tab-btn" onclick="openTab('rel-tab', this)">🕸️ 관계</button>
+                <button class="tab-btn" onclick="openTab('data-tab', this)">💾 데이터 관리</button>
+            </div>
+
+            <div id="main-tab" class="tab-content active">
+                <div class="card">
+                    <p>💰 자산: <span id="money" style="font-weight:bold; color:#5c6bc0;">0</span>원 | 📅 <span id="days">1</span>일차</p>
+                    <div class="btn-group">
+                        <button onclick="hireCharacter()">신입 채용 (5,000원)</button>
+                        <button class="btn-skip" onclick="processDay()">⏩ 다음 날로 (Day Skip)</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2>📑 사원 명부</h2>
+                    <div id="char-list" class="char-grid"></div>
+                </div>
+
+                <div class="guide-box">
+                    <h4>📘 게임 안내서</h4>
+                    <ul>
+                        <li><b>자산:</b> 사원들이 3초마다 업무를 수행하여 돈을 법니다.</li>
+                        <li><b>채용:</b> 5,000원으로 새 사원을 영입합니다. 이름은 클릭해서 수정 가능!</li>
+                        <li><b>관계:</b> 사원들은 매일 무작위로 교류하며 <b>찐친, 악연, 라이벌</b>이 됩니다.</li>
+                        <li><b>승진 배틀:</b> 경험치가 쌓이면 동료와 대결합니다. 관계 보너스가 승패를 좌우합니다.</li>
+                        <li><b>스트레스(노란바):</b> 100이 되면 <b>체력(빨간바)</b>이 깎이고 병가를 갑니다.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="rel-tab" class="tab-content">
+                <div class="card">
+                    <h2>🕸️ 관계 리포트</h2>
+                    <div id="rel-list"></div>
+                </div>
+            </div>
+
+            <div id="data-tab" class="tab-content">
+                <div class="card">
+                    <h3>📁 저장/불러오기</h3>
+                    <div class="file-box">
+                        <button onclick="exportMembers()">사원/관계 내보내기</button>
+                        <button onclick="exportStatus()">진행상황 내보내기</button>
+                    </div>
+                    <div class="file-box">
+                        <p style="font-size:0.8rem; margin-top:0;">데이터 불러오기:</p>
+                        <input type="file" id="universal-input" style="font-size:0.7rem" accept=".json" onchange="importData(event)">
+                    </div>
+                    <button class="danger" style="width:100%; margin-top:20px;" onclick="resetGame()">초기화</button>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <h2>📜 업무 & 활동 로그</h2>
+                <div id="log-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="closeModal()"></div>
+    
+    <div id="edit-modal" class="modal">
+        <h3 id="modal-char-name" style="margin-top:0; color:var(--primary);">사원 관리</h3>
+        <label style="font-size:0.8rem;">이름 수정</label>
+        <input type="text" id="edit-name" class="modal-input">
+        <label style="font-size:0.8rem;">상대 선택 (관계설정 / 배틀대상)</label>
+        <select id="target-select" class="modal-select"></select>
+        <label style="font-size:0.8rem;">관계 종류</label>
+        <select id="type-select" class="modal-select"></select>
+        <div class="btn-group">
+            <button onclick="applyChanges()">저장 및 관계적용</button>
+            <button class="warning" style="color:#455a64" onclick="manualBattle()">수동 승진 배틀</button>
+        </div>
+        <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
+        <div class="btn-group">
+            <button class="danger" onclick="deleteCharacter()">사원 퇴사(삭제)</button>
+            <button style="background:#ccc" onclick="closeModal()">닫기</button>
+        </div>
+    </div>
+
+<script>
+    let money = 20000;
+    let days = 1;
+    let characters = [];
+    let relationships = [];
+    let selectedCharId = null;
+
+    const ranks = ["인턴", "사원", "대리", "과장", "차장", "부장", "이사", "CEO"];
+    const relTypes = [
+        { name: "연애", emoji: "❤️", bonus: -5 },
+        { name: "악연", emoji: "🔥", bonus: 10 },
+        { name: "찐친", emoji: "🤝", bonus: -3 },
+        { name: "라이벌", emoji: "⚡", bonus: 15 },
+        { name: "무관심", emoji: "😐", bonus: 0 }
+    ];
+
+    // --- 핵심 로직: 하루 진행 ---
+    function processDay() {
+        days++;
+        
+        // 1. 랜덤 이벤트
+        if (Math.random() < 0.15) triggerEvent(); 
+        
+        // 2. 사원 상태 업데이트
+        characters.forEach(c => {
+            if (c.health <= 0) { 
+                c.health = Math.min(100, c.health + 10); 
+                return; 
+            }
+            c.work += 0.05; 
+            c.exp += Math.floor(Math.random() * 10) + 5;
+            c.stress += Math.floor(Math.random() * 6);
+            money += Math.floor(c.work * 6);
+            
+            if (c.stress >= 100) { 
+                c.health -= 30; 
+                c.stress = 40; 
+                addLog(`🚑 ${c.name} 과로로 쓰러짐`, "log-danger"); 
+            }
+            
+            // 자동 승진 체크
+            if (c.exp >= (c.rankIdx + 1) * 150 && c.rankIdx < ranks.length - 1) {
+                initiatePromotionBattle(c);
+            }
+        });
+
+        // 3. 자동 상호작용
+        if (characters.length >= 2 && Math.random() < 0.4) {
+            handleAutoInteraction();
+        }
+
+        updateUI(); 
+        saveLocal();
+    }
+
+    // 실시간 자동 진행 루프 (3초마다 processDay 호출)
+    setInterval(processDay, 3000);
+
+    function hireCharacter() {
+        if (money < 5000) return addLog("💰 자산 부족!", "log-danger");
+        money -= 5000;
+        const name = "사원" + (characters.length + 1);
+        characters.push({
+            id: Date.now() + Math.random(), 
+            name, rankIdx: 0, stress: 0, health: 100, exp: 0,
+            work: 15 + Math.random() * 10, talk: 10 + Math.random() * 10, luck: Math.floor(Math.random() * 10) + 1
+        });
+        addLog(`✨ ${name} 신입 입사`, "log-info");
+        updateUI();
+    }
+
+    function handleAutoInteraction() {
+        const idx1 = Math.floor(Math.random() * characters.length);
+        let idx2 = Math.floor(Math.random() * characters.length);
+        while (idx1 === idx2) idx2 = Math.floor(Math.random() * characters.length);
+
+        const p1 = characters[idx1];
+        const p2 = characters[idx2];
+        const rand = Math.random();
+
+        if (rand < 0.4) {
+            addLog(`💬 ${p1.name}와(과) ${p2.name}가 커피를 마시며 수다를 떱니다.`, "log-info");
+            p1.stress = Math.max(0, p1.stress - 5);
+            p2.stress = Math.max(0, p2.stress - 5);
+            updateOrAddRel(p1, p2, "찐친", "🤝");
+        } else if (rand < 0.7) {
+            addLog(`💢 ${p1.name}와(과) ${p2.name}가 업무 문제로 말다툼을 합니다.`, "log-danger");
+            p1.stress += 10;
+            p2.stress += 10;
+            updateOrAddRel(p1, p2, "악연", "🔥");
+        } else {
+            addLog(`⚡ ${p1.name}와(과) ${p2.name} 사이에 묘한 긴장감이 흐릅니다.`, "log-battle");
+            p1.exp += 10;
+            p2.exp += 10;
+            updateOrAddRel(p1, p2, "라이벌", "⚡");
+        }
+    }
+
+    function updateOrAddRel(p1, p2, typeName, emoji) {
+        relationships = relationships.filter(r => !((r.p1 === p1.id && r.p2 === p2.id) || (r.p1 === p2.id && r.p2 === p1.id)));
+        relationships.push({ p1: p1.id, p1Name: p1.name, p2: p2.id, p2Name: p2.name, type: typeName, emoji: emoji });
+    }
+
+    function triggerEvent() {
+        const evts = [
+            { n: "정전", f: () => { money -= 2000; addLog("⚡ 갑작스러운 정전! 업무 손실 (-2,000원)", "log-danger"); }},
+            { n: "보너스", f: () => { money += 5000; addLog("🧧 정부 지원금 당첨! (+5,000원)", "log-info"); }},
+            { n: "야근", f: () => { characters.forEach(c => c.stress += 10); addLog("🌙 전 사원 강제 야근 (스트레스 증가)", "log-danger"); }},
+            { n: "회식", f: () => { characters.forEach(c => { c.stress = Math.max(0, c.stress - 20); c.health = Math.min(100, c.health + 5); }); addLog("🍻 즐거운 회식! (스트레스 해소)", "log-info"); }},
+            { n: "영감", f: () => { if(characters.length > 0) { const c = characters[Math.floor(Math.random()*characters.length)]; c.work += 5; addLog(`💡 ${c.name}의 아이디어 폭발!`, "log-info"); }}}
+        ];
+        evts[Math.floor(Math.random()*evts.length)].f();
+    }
+
+    function initiatePromotionBattle(p1, targetId = null) {
+        let others = characters.filter(o => o.id !== p1.id);
+        if (others.length === 0) {
+            p1.rankIdx++; p1.exp = 0; addLog(`🎊 ${p1.name} 단독 승진!`);
+            return;
+        }
+        const p2 = targetId ? characters.find(o => o.id === targetId) : others[Math.floor(Math.random() * others.length)];
+        let bonus = 0;
+        const rel = relationships.find(r => (r.p1 === p1.id && r.p2 === p2.id) || (r.p1 === p2.id && r.p2 === p1.id));
+        if (rel) bonus = relTypes.find(t => t.name === rel.type)?.bonus || 0;
+
+        const s1 = (p1.work * 1.2) + p1.talk + (p1.luck * Math.random() * 10) + bonus;
+        const s2 = (p2.work * 1.2) + p2.talk + (p2.luck * Math.random() * 10);
+
+        addLog(`⚔️ 승진 배틀: ${p1.name} VS ${p2.name}`, "log-battle");
+        if (s1 > s2) {
+            p1.rankIdx++; p1.exp = 0;
+            addLog(`🏆 ${p1.name} 승리! [${ranks[p1.rankIdx]}] 승진`, "log-info");
+        } else {
+            p1.exp = Math.max(0, p1.exp - 50);
+            addLog(`📉 ${p1.name} 패배... 승급 실패`, "log-danger");
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('money').innerText = Math.floor(money).toLocaleString();
+        document.getElementById('days').innerText = days;
+        const list = document.getElementById('char-list');
+        list.innerHTML = characters.map(c => `
+            <div class="char-item" onclick="openRelEdit(${c.id})">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                    <strong>${c.name}</strong>
+                    <span style="font-size:0.7rem; color:white; background:var(--primary); padding:2px 6px; border-radius:5px;">${ranks[c.rankIdx]}</span>
+                </div>
+                <div class="stat-group">
+                    <div class="stat-tag"><span class="stat-label">💼업무</span><span class="stat-val">${c.work.toFixed(1)}</span></div>
+                    <div class="stat-tag"><span class="stat-label">🗣️화술</span><span class="stat-val">${c.talk.toFixed(1)}</span></div>
+                    <div class="stat-tag"><span class="stat-label">📈경험</span><span class="stat-val">${c.exp}</span></div>
+                    <div class="stat-tag"><span class="stat-label">🍀운</span><span class="stat-val">${c.luck}</span></div>
+                </div>
+                <div class="status-bar-group">
+                    <div class="status-bar"><div class="status-fill" style="width:${c.stress}%; background:var(--warning);"></div></div>
+                    <div class="status-bar"><div class="status-fill" style="width:${c.health}%; background:var(--danger);"></div></div>
+                </div>
+            </div>`).join('');
+    }
+
+    function openRelEdit(id) {
+        selectedCharId = id;
+        const char = characters.find(c => c.id === id);
+        const others = characters.filter(o => o.id !== id);
+        document.getElementById('modal-char-name').innerText = `${char.name} 관리`;
+        document.getElementById('edit-name').value = char.name;
+        document.getElementById('target-select').innerHTML = others.map(o => `<option value="${o.id}">${o.name} (${ranks[o.rankIdx]})</option>`).join('') || '<option value="">대상 없음</option>';
+        document.getElementById('type-select').innerHTML = relTypes.map(r => `<option value="${r.name}">${r.emoji} ${r.name}</option>`).join('');
+        document.getElementById('edit-modal').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+    }
+
+    function applyChanges() {
+        const char = characters.find(c => c.id === selectedCharId);
+        char.name = document.getElementById('edit-name').value;
+        const targetId = parseFloat(document.getElementById('target-select').value);
+        if(targetId) {
+            const p2 = characters.find(c => c.id === targetId);
+            const typeName = document.getElementById('type-select').value;
+            const type = relTypes.find(r => r.name === typeName);
+            updateOrAddRel(char, p2, typeName, type.emoji);
+        }
+        closeModal(); updateUI(); saveLocal();
+    }
+
+    function deleteCharacter() {
+        if(!confirm("이 사원을 정말 퇴사시키겠습니까?")) return;
+        characters = characters.filter(c => c.id !== selectedCharId);
+        relationships = relationships.filter(r => r.p1 !== selectedCharId && r.p2 !== selectedCharId);
+        addLog("👋 사원이 회사를 떠났습니다.", "log-danger");
+        closeModal(); updateUI(); saveLocal();
+    }
+
+    function openTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
+        if(tabId === 'rel-tab') updateRelUI();
+    }
+
+    function closeModal() { document.querySelectorAll('.modal, .overlay').forEach(el => el.style.display = 'none'); }
+
+    function addLog(msg, type) {
+        const logBox = document.getElementById('log-container');
+        const entry = document.createElement('div');
+        entry.className = 'log-entry ' + (type || '');
+        entry.innerHTML = `<small>Day ${days}</small> ${msg}`;
+        logBox.prepend(entry);
+        if(logBox.children.length > 50) logBox.lastChild.remove();
+    }
+
+    function updateRelUI() {
+        const list = document.getElementById('rel-list');
+        list.innerHTML = relationships.length === 0 ? "<p>형성된 관계가 없습니다.</p>" : 
+            relationships.map(r => `<div style="padding:8px; border-bottom:1px solid #eee;">${r.p1Name} ${r.emoji} ${r.p2Name} (${r.type})</div>`).join('');
+    }
+
+    function exportMembers() { download({ characters, relationships }, "members.json"); }
+    function exportStatus() { download({ money, days, companyName: document.getElementById('company-name-input').value }, "status.json"); }
+    function download(data, filename) {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+    }
+    function importData(e) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const data = JSON.parse(ev.target.result);
+            if(data.characters) { characters = data.characters; relationships = data.relationships || []; }
+            if(data.money !== undefined) { money = data.money; days = data.days; document.getElementById('company-name-input').value = data.companyName; }
+            updateUI(); addLog("📥 데이터 로드 완료");
+        };
+        reader.readAsText(e.target.files[0]);
+    }
+    function saveLocal() {
+        const data = { money, days, characters, relationships, companyName: document.getElementById('company-name-input').value };
+        localStorage.setItem('pastel_sim_save', JSON.stringify(data));
+    }
+    function resetGame() { if(confirm("초기화할까요?")) { localStorage.clear(); location.reload(); } }
+
+    window.onload = () => {
+        const saved = localStorage.getItem('pastel_sim_save');
+        if (saved) {
+            const d = JSON.parse(saved);
+            money = d.money; days = d.days; characters = d.characters || [];
+            relationships = d.relationships || [];
+            document.getElementById('company-name-input').value = d.companyName || "회사";
+            updateUI();
+        }
+    };
+</script>
+</body>
+</html>
