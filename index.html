@@ -2,392 +2,257 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>경영 시뮬레이션</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회사 경영 시뮬레이션</title>
     <style>
-        :root {
-            --bg: #f8f9fa; --card: #ffffff; --primary: #9fa8da; --secondary: #a5d6a7;
-            --danger: #ef9a9a; --warning: #ffe082; --info: #90caf9; --text: #455a64; --border: #eceff1;
+        :root { 
+            --bg: #fffcfd; --card: #ffffff; --primary: #ffc9d6; --secondary: #d1f2ff; 
+            --accent: #e9d5ff; --point: #d3f9d8; --text: #5d5d5d; --danger: #ffb3b3; --fired: #e0e0e0;
         }
-        body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; line-height: 1.5; }
-        .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
-        @media (min-width: 1024px) { .container { display: grid; grid-template-columns: 1.6fr 1fr; align-items: start; } }
-        .card { background: var(--card); padding: 15px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid var(--border); margin-bottom: 10px; }
-        header { text-align: center; margin-bottom: 10px; }
-        .company-name { font-size: 1.8rem; font-weight: 800; color: #7986cb; border: none; background: transparent; text-align: center; width: 100%; outline: none; }
-        .tabs { display: flex; gap: 8px; margin-bottom: 10px; overflow-x: auto; }
-        .tab-btn { background: #cfd8dc; color: #546e7a; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-weight: bold; border: none; flex: 1; transition: 0.3s; white-space: nowrap; }
-        .tab-btn.active { background: var(--primary); color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
-        .char-item { border: 1px solid var(--border); padding: 15px; border-radius: 16px; background: #fff; cursor: pointer; transition: 0.2s; position: relative; }
-        .char-item:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
-        .stat-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; font-size: 0.85rem; }
-        .stat-tag { background: #fafafa; padding: 4px 8px; border-radius: 8px; display: flex; justify-content: space-between; border: 1px solid #f5f5f5; }
-        .stat-label { color: #90a4ae; } .stat-val { color: #7986cb; font-weight: 700; }
-        .status-bar-group { margin-top: 12px; }
-        .status-bar { height: 8px; background: #eceff1; border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
-        .status-fill { height: 100%; transition: width 0.6s ease; }
-        #log-container { height: 500px; overflow-y: auto; font-size: 0.85rem; background: #ffffff; padding: 15px; border-radius: 16px; border: 1px solid var(--border); }
-        .log-entry { padding: 8px; border-bottom: 1px solid #f8f9fa; border-left: 4px solid #eceff1; margin-bottom: 4px; }
-        .log-battle { background: #fff9c4; border-left-color: #fbc02d; font-weight: bold; }
-        .log-danger { background: #ffebee; border-left-color: var(--danger); }
-        .log-info { background: #e8f5e9; border-left-color: var(--secondary); }
-        .btn-group { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-        button { cursor: pointer; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 600; flex: 1; }
-        .btn-skip { background: var(--secondary); margin-top: 5px; }
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; z-index: 100; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:99; backdrop-filter: blur(2px); }
-        .guide-box { font-size: 0.85rem; color: #78909c; margin-top: 20px; padding: 15px; background: #f1f8e9; border-radius: 12px; border: 1px solid #c5e1a5; }
-        .guide-box h4 { margin-top: 0; color: #558b2f; }
-        .guide-box ul { padding-left: 20px; margin-bottom: 0; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* 상단 바 */
+        .header { background: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); flex-shrink: 0; }
+        .finance-bar { background: #fff; padding: 10px 20px; font-size: 0.85rem; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; color: #ff8fab; font-weight: bold; }
+        
+        .nav { display: flex; gap: 8px; padding: 10px 15px; background: #fff; border-bottom: 1px solid #eee; overflow-x: auto; }
+        .nav button { padding: 10px 18px; border: none; background: #fdfdfd; cursor: pointer; border-radius: 12px; font-weight: bold; color: #aaa; white-space: nowrap; }
+        .nav button.active { background: var(--primary); color: white; }
+
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        @media (min-width: 900px) { .main-wrapper { flex-direction: row; } }
+        
+        .content-area { flex: 1; padding: 15px; overflow-y: auto; }
+        .page { display: none; } .page.active { display: block; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 12px; }
+        
+        /* 캐릭터 카드 */
+        .card { background: var(--card); padding: 15px; border-radius: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 2px solid #fff; cursor: pointer; position: relative; transition: 0.2s; }
+        .card.fired { background: var(--fired); filter: grayscale(1); opacity: 0.6; cursor: default; }
+        .card:hover:not(.fired) { border-color: var(--primary); transform: translateY(-3px); }
+        .name-input { border: none; background: transparent; font-weight: bold; font-size: 1.05rem; width: 100%; color: var(--text); outline: none; padding: 2px; }
+        .name-input:hover { background: #fff0f3; border-radius: 5px; }
+
+        /* 스탯(4종) 및 동호회 */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.65rem; margin-top: 10px; }
+        .stat-bar { height: 4px; background: #eee; border-radius: 2px; overflow: hidden; margin-top: 2px; }
+        .stat-fill { height: 100%; transition: 0.5s; }
+        .club-tag { display: inline-block; padding: 2px 8px; border-radius: 20px; background: var(--point); font-size: 0.6rem; margin-top: 5px; font-weight: bold; color: #55a35d; }
+
+        /* 로그 (아래에서 위로 자동 스크롤) */
+        .log-sidebar { background: white; border-left: 1px solid #eee; display: flex; flex-direction: column; width: 100%; height: 280px; }
+        @media (min-width: 900px) { .log-sidebar { width: 420px; height: auto; } }
+        .log-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .log-entry { padding: 10px; border-radius: 12px; font-size: 0.85rem; background: #fff9fa; border-left: 4px solid var(--primary); animation: slideUp 0.3s ease-out; line-height: 1.4; }
+        .log-urgent { background: #fff1f1; border-left-color: #ff8787; font-weight: bold; }
+
+        /* 관계 리스트 */
+        .rel-item { background: white; padding: 12px; border-radius: 18px; border-left: 6px solid var(--accent); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .rel-bad { border-left-color: #ffb3b3; color: #d63031; }
+
+        /* 모달 */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 3000; backdrop-filter: blur(5px); }
+        .modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: 35px; width: 92%; max-width: 420px; }
+        select, input[type="text"] { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 1px solid #eee; }
+        .btn { padding: 14px; border-radius: 15px; border: none; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        .btn-main { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
 
-    <header>
-        <input type="text" id="company-name-input" class="company-name" value="회사" onchange="saveLocal()">
-    </header>
-    
-    <div class="container">
-        <div>
-            <div class="tabs">
-                <button class="tab-btn active" onclick="openTab('main-tab', this)">👥 사원</button>
-                <button class="tab-btn" onclick="openTab('rel-tab', this)">🕸️ 관계</button>
-                <button class="tab-btn" onclick="openTab('data-tab', this)">💾 데이터 관리</button>
-            </div>
+<div class="header">
+    <h2 style="margin:0; color:var(--primary); font-size:1.1rem;">🏢 회사 경영 시뮬레이션</h2>
+    <div style="display:flex; gap:8px;">
+        <button onclick="next()" class="btn" style="margin:0; width:auto; padding:10px 15px; background:var(--secondary);">하루 진행</button>
+        <button id="autoBtn" onclick="toggleAuto()" class="btn" style="margin:0; width:auto; padding:10px 15px; background:var(--primary); color:white;">자동 시작</button>
+    </div>
+</div>
 
-            <div id="main-tab" class="tab-content active">
-                <div class="card">
-                    <p>💰 자산: <span id="money" style="font-weight:bold; color:#5c6bc0;">0</span>원 | 📅 <span id="days">1</span>일차</p>
-                    <div class="btn-group">
-                        <button onclick="hireCharacter()">신입 채용 (5,000원)</button>
-                        <button class="btn-skip" onclick="processDay()">⏩ 다음 날로 (Day Skip)</button>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <h2>📑 사원 명부</h2>
-                    <div id="char-list" class="char-grid"></div>
-                </div>
+<div class="finance-bar">
+    <span>자금: <span id="mDisp">250,000</span>원</span>
+    <span>날짜: Day <span id="dDisp">1</span></span>
+</div>
 
-                <div class="guide-box">
-                    <h4>📘 게임 안내서</h4>
-                    <ul>
-                        <li><b>자산:</b> 사원들이 3초마다 업무를 수행하여 돈을 법니다.</li>
-                        <li><b>채용:</b> 5,000원으로 새 사원을 영입합니다. 이름은 클릭해서 수정 가능!</li>
-                        <li><b>관계:</b> 사원들은 매일 무작위로 교류하며 <b>찐친, 악연, 라이벌</b>이 됩니다.</li>
-                        <li><b>승진 배틀:</b> 경험치가 쌓이면 동료와 대결합니다. 관계 보너스가 승패를 좌우합니다.</li>
-                        <li><b>스트레스(노란바):</b> 100이 되면 <b>체력(빨간바)</b>이 깎이고 병가를 갑니다.</li>
-                    </ul>
-                </div>
-            </div>
+<div class="nav">
+    <button id="n-emp" class="active" onclick="tab('emp')">멤버 관리</button>
+    <button id="n-rel" onclick="tab('rel')">관계/동호회</button>
+    <button id="n-sys" onclick="tab('sys')">시스템</button>
+</div>
 
-            <div id="rel-tab" class="tab-content">
-                <div class="card">
-                    <h2>🕸️ 관계 리포트</h2>
-                    <div id="rel-list"></div>
-                </div>
-            </div>
-
-            <div id="data-tab" class="tab-content">
-                <div class="card">
-                    <h3>📁 저장/불러오기</h3>
-                    <div class="file-box">
-                        <button onclick="exportMembers()">사원/관계 내보내기</button>
-                        <button onclick="exportStatus()">진행상황 내보내기</button>
-                    </div>
-                    <div class="file-box">
-                        <p style="font-size:0.8rem; margin-top:0;">데이터 불러오기:</p>
-                        <input type="file" id="universal-input" style="font-size:0.7rem" accept=".json" onchange="importData(event)">
-                    </div>
-                    <button class="danger" style="width:100%; margin-top:20px;" onclick="resetGame()">초기화</button>
-                </div>
-            </div>
+<div class="main-wrapper">
+    <div class="content-area">
+        <div id="p-emp" class="page active">
+            <div id="eGrid" class="grid"></div>
+            <div id="emptyMsg" style="text-align:center; margin-top:100px; color:#ccc;">사원이 0명입니다. 채용을 시작하세요!</div>
         </div>
-
-        <div>
-            <div class="card">
-                <h2>📜 업무 & 활동 로그</h2>
-                <div id="log-container"></div>
-            </div>
+        <div id="p-rel" class="page"><div id="rList"></div></div>
+        <div id="p-sys" class="page">
+            <button onclick="saveData('HR')" class="btn">인사 데이터 추출</button>
+            <button onclick="saveData('BIZ')" class="btn" style="background:var(--secondary);">재무 데이터 추출</button>
+            <button onclick="location.reload()" class="btn" style="background:var(--danger); color:white;">게임 초기화</button>
         </div>
     </div>
-
-    <div class="overlay" id="overlay" onclick="closeModal()"></div>
-    
-    <div id="edit-modal" class="modal">
-        <h3 id="modal-char-name" style="margin-top:0; color:var(--primary);">사원 관리</h3>
-        <label style="font-size:0.8rem;">이름 수정</label>
-        <input type="text" id="edit-name" class="modal-input">
-        <label style="font-size:0.8rem;">상대 선택 (관계설정 / 배틀대상)</label>
-        <select id="target-select" class="modal-select"></select>
-        <label style="font-size:0.8rem;">관계 종류</label>
-        <select id="type-select" class="modal-select"></select>
-        <div class="btn-group">
-            <button onclick="applyChanges()">저장 및 관계적용</button>
-            <button class="warning" style="color:#455a64" onclick="manualBattle()">수동 승진 배틀</button>
-        </div>
-        <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
-        <div class="btn-group">
-            <button class="danger" onclick="deleteCharacter()">사원 퇴사(삭제)</button>
-            <button style="background:#ccc" onclick="closeModal()">닫기</button>
-        </div>
+    <div class="log-sidebar">
+        <div style="padding:15px; font-weight:bold; color:var(--primary); border-bottom:1px solid #eee;">🎀 실시간 오피스 로그</div>
+        <div id="lBox" class="log-container"></div>
     </div>
+</div>
+
+<div id="mOv" class="modal-overlay" onclick="clM()"><div class="modal" onclick="event.stopPropagation()">
+    <h3 id="mTitle" style="color:var(--primary); margin:0;">사원 정보 수정</h3>
+    <div style="margin-top:15px;">이름 수정: <input type="text" id="editName"></div>
+    <div style="padding:15px; background:#fdfafb; border-radius:18px; margin-top:10px;">
+        <strong>⚔️ 승진 배틀 (하극상 가능)</strong><br>
+        상대: <select id="btlSel"></select>
+        <button onclick="startBattle()" class="btn btn-main">결투 시작</button>
+    </div>
+    <div style="padding:15px; background:#fff5f7; border-radius:18px; margin-top:10px;">
+        <strong>🤝 관계 강제 설정</strong><br>
+        대상: <select id="relSel"></select>
+        타입: <select id="relType"></select>
+        <button onclick="manualRel()" class="btn" style="background:#8a70d6; color:white;">관계 확정</button>
+    </div>
+    <button onclick="deleteEmp(selId)" class="btn" style="background:var(--danger); color:white; margin-top:15px;">수동 해고(완전 삭제)</button>
+    <button onclick="clM()" class="btn" style="background:#eee;">닫기</button>
+</div></div>
 
 <script>
-    let money = 20000;
-    let days = 1;
-    let characters = [];
-    let relationships = [];
-    let selectedCharId = null;
+    let st = { m: 250000, d: 1, e: [], r: {}, over: false };
+    const RANKS = ["인턴", "사원", "대리", "과장", "차장", "부장", "이사", "CEO"];
+    const SALARY = [2000, 3800, 6500, 11000, 19000, 35000, 60000, 130000];
+    const TRAITS = ["천재", "워커홀릭", "사교가", "게으름", "트러블메이커", "야심가"];
+    const RELS = ["베프", "라이벌", "비밀연애", "혐관", "짝사랑", "가스라이팅", "멘토링", "불륜", "경계"];
+    const LN = ["김", "이", "박", "최", "정", "강", "조", "윤", "장", "임"];
+    const FN = ["아영", "도원", "준서", "수연", "지호", "나은", "민준", "하린", "예준", "유진"];
+    let selId = null, autoInt = null;
 
-    const ranks = ["인턴", "사원", "대리", "과장", "차장", "부장", "이사", "CEO"];
-    const relTypes = [
-        { name: "연애", emoji: "❤️", bonus: -5 },
-        { name: "악연", emoji: "🔥", bonus: 10 },
-        { name: "찐친", emoji: "🤝", bonus: -3 },
-        { name: "라이벌", emoji: "⚡", bonus: 15 },
-        { name: "무관심", emoji: "😐", bonus: 0 }
-    ];
+    function hire() {
+        const name = LN[Math.floor(Math.random()*10)] + FN[Math.floor(Math.random()*10)];
+        st.e.push({ 
+            id:Date.now()+Math.random(), n:name, rIdx:0, 
+            tech:50, sale:50, mtl:50, hp:50, 
+            trait:TRAITS[Math.floor(Math.random()*6)], isFired:false, club:null 
+        });
+        document.getElementById('emptyMsg').style.display = 'none';
+        uUI(); log(`🌸 <b>${name}</b>님이 신입 사원으로 채용되었습니다.`);
+    }
 
-    // --- 핵심 로직: 하루 진행 ---
-    function processDay() {
-        days++;
+    function next() {
+        if(st.over) return;
+        st.d++; let rev = 0, exp = 0;
         
-        // 1. 랜덤 이벤트
-        if (Math.random() < 0.15) triggerEvent(); 
-        
-        // 2. 사원 상태 업데이트
-        characters.forEach(c => {
-            if (c.health <= 0) { 
-                c.health = Math.min(100, c.health + 10); 
-                return; 
-            }
-            c.work += 0.05; 
-            c.exp += Math.floor(Math.random() * 10) + 5;
-            c.stress += Math.floor(Math.random() * 6);
-            money += Math.floor(c.work * 6);
+        st.e.forEach(e => {
+            if(e.isFired) return;
+            rev += (e.tech * 1.8) + (e.sale * 2.3);
+            exp += SALARY[e.rIdx];
+
+            // 실시간 행동 로직
+            const roll = Math.random();
+            if(roll < 0.1) log(`☕ [행동] <b>${e.n}</b>님이 탕비실에서 커피를 마시며 휴식합니다.`);
+            else if(roll < 0.15) log(`📖 [행동] <b>${e.n}</b>님이 업무 관련 전문 서적을 탐독합니다.`);
             
-            if (c.stress >= 100) { 
-                c.health -= 30; 
-                c.stress = 40; 
-                addLog(`🚑 ${c.name} 과로로 쓰러짐`, "log-danger"); 
-            }
+            if(e.trait === "천재" && roll < 0.1) { e.tech += 4; log(`💡 [성격] 천재 <b>${e.n}</b>님이 혁신적인 알고리즘을 제안했습니다!`); }
+            if(e.trait === "게으름" && roll < 0.12) { rev -= 6000; log(`😴 [성격] <b>${e.n}</b>님이 몰래 유튜브를 보다가 적발되었습니다.`); }
+            if(e.trait === "트러블메이커" && roll < 0.05) { st.m -= 20000; log(`👿 [성격] <b>${e.n}</b>님이 다른 부서와 큰 마찰을 빚었습니다! (-20,000)`); }
             
-            // 자동 승진 체크
-            if (c.exp >= (c.rankIdx + 1) * 150 && c.rankIdx < ranks.length - 1) {
-                initiatePromotionBattle(c);
+            // 상호작용 및 관계 형성
+            if(roll < 0.12) autoRel(e);
+
+            // 동호회 로직
+            if(e.trait === "사교가" && !e.club && roll < 0.06) {
+                const clubs = ["볼링클럽", "와인동호회", "스터디모임", "낚시왕"];
+                e.club = clubs[Math.floor(Math.random()*4)];
+                log(`🎨 [동호회] <b>${e.n}</b>님이 '${e.club}'을(를) 개설했습니다.`);
             }
+            if(e.club) exp += 1500; // 유지비
         });
 
-        // 3. 자동 상호작용
-        if (characters.length >= 2 && Math.random() < 0.4) {
-            handleAutoInteraction();
+        // 긴급 이벤트 (불륜 포함)
+        if(Math.random() < 0.09) {
+            const evts = [
+                {t:"🚀 혁신 기술 투자 유치!", m:100000}, {t:"💸 대규모 세무 조사 착수!", m:-50000},
+                {t:"💔 사내 불륜 스캔들 폭로!", m:-30000}, {t:"📉 원자재 가격 급등!", m:-20000},
+                {t:"🌟 역대급 실적 달성!", m:60000}
+            ];
+            const ev = evts[Math.floor(Math.random()*evts.length)];
+            st.m += ev.m; log(`📢 [긴급] ${ev.t} (${ev.m > 0 ? '+':''}${ev.m.toLocaleString()})`, "log-urgent");
         }
 
-        updateUI(); 
-        saveLocal();
+        // 자동 해고 시스템 (성과 하위자 회색 처리)
+        if(st.m < exp) {
+            const targets = st.e.filter(x=>!x.isFired).sort((a,b)=>(a.tech+a.sale)-(b.tech+b.sale));
+            if(targets[0]) { targets[0].isFired = true; log(`⚠️ [재정악화] 자금 부족으로 <b>${targets[0].n}</b>님이 자동 해고(회색처리)되었습니다.`); }
+        }
+
+        st.m = st.m + rev - exp;
+        if(st.m <= 0) { st.over = true; alert("회사가 파산했습니다. (엔딩)"); toggleAuto(); }
+        uUI();
     }
 
-    // 실시간 자동 진행 루프 (3초마다 processDay 호출)
-    setInterval(processDay, 3000);
-
-    function hireCharacter() {
-        if (money < 5000) return addLog("💰 자산 부족!", "log-danger");
-        money -= 5000;
-        const name = "사원" + (characters.length + 1);
-        characters.push({
-            id: Date.now() + Math.random(), 
-            name, rankIdx: 0, stress: 0, health: 100, exp: 0,
-            work: 15 + Math.random() * 10, talk: 10 + Math.random() * 10, luck: Math.floor(Math.random() * 10) + 1
-        });
-        addLog(`✨ ${name} 신입 입사`, "log-info");
-        updateUI();
-    }
-
-    function handleAutoInteraction() {
-        const idx1 = Math.floor(Math.random() * characters.length);
-        let idx2 = Math.floor(Math.random() * characters.length);
-        while (idx1 === idx2) idx2 = Math.floor(Math.random() * characters.length);
-
-        const p1 = characters[idx1];
-        const p2 = characters[idx2];
-        const rand = Math.random();
-
-        if (rand < 0.4) {
-            addLog(`💬 ${p1.name}와(과) ${p2.name}가 커피를 마시며 수다를 떱니다.`, "log-info");
-            p1.stress = Math.max(0, p1.stress - 5);
-            p2.stress = Math.max(0, p2.stress - 5);
-            updateOrAddRel(p1, p2, "찐친", "🤝");
-        } else if (rand < 0.7) {
-            addLog(`💢 ${p1.name}와(과) ${p2.name}가 업무 문제로 말다툼을 합니다.`, "log-danger");
-            p1.stress += 10;
-            p2.stress += 10;
-            updateOrAddRel(p1, p2, "악연", "🔥");
-        } else {
-            addLog(`⚡ ${p1.name}와(과) ${p2.name} 사이에 묘한 긴장감이 흐릅니다.`, "log-battle");
-            p1.exp += 10;
-            p2.exp += 10;
-            updateOrAddRel(p1, p2, "라이벌", "⚡");
+    function autoRel(p1) {
+        const others = st.e.filter(x => x.id !== p1.id && !x.isFired);
+        if(others.length > 0) {
+            const p2 = others[Math.floor(Math.random()*others.length)];
+            const t = RELS[Math.floor(Math.random()*RELS.length)];
+            st.r[[p1.id, p2.id].sort().join('-')] = t;
+            if(t === "불륜") log(`🔥 [스캔들] <b>${p1.n}</b> & <b>${p2.n}</b>님이 은밀한 관계인 듯합니다...`);
+            else log(`✨ [관계] <b>${p1.n}</b> & <b>${p2.n}</b>님이 <b>'${t}'</b> 관계가 되었습니다.`);
         }
     }
 
-    function updateOrAddRel(p1, p2, typeName, emoji) {
-        relationships = relationships.filter(r => !((r.p1 === p1.id && r.p2 === p2.id) || (r.p1 === p2.id && r.p2 === p1.id)));
-        relationships.push({ p1: p1.id, p1Name: p1.name, p2: p2.id, p2Name: p2.name, type: typeName, emoji: emoji });
-    }
-
-    function triggerEvent() {
-        const evts = [
-            { n: "정전", f: () => { money -= 2000; addLog("⚡ 갑작스러운 정전! 업무 손실 (-2,000원)", "log-danger"); }},
-            { n: "보너스", f: () => { money += 5000; addLog("🧧 정부 지원금 당첨! (+5,000원)", "log-info"); }},
-            { n: "야근", f: () => { characters.forEach(c => c.stress += 10); addLog("🌙 전 사원 강제 야근 (스트레스 증가)", "log-danger"); }},
-            { n: "회식", f: () => { characters.forEach(c => { c.stress = Math.max(0, c.stress - 20); c.health = Math.min(100, c.health + 5); }); addLog("🍻 즐거운 회식! (스트레스 해소)", "log-info"); }},
-            { n: "영감", f: () => { if(characters.length > 0) { const c = characters[Math.floor(Math.random()*characters.length)]; c.work += 5; addLog(`💡 ${c.name}의 아이디어 폭발!`, "log-info"); }}}
-        ];
-        evts[Math.floor(Math.random()*evts.length)].f();
-    }
-
-    function initiatePromotionBattle(p1, targetId = null) {
-        let others = characters.filter(o => o.id !== p1.id);
-        if (others.length === 0) {
-            p1.rankIdx++; p1.exp = 0; addLog(`🎊 ${p1.name} 단독 승진!`);
-            return;
-        }
-        const p2 = targetId ? characters.find(o => o.id === targetId) : others[Math.floor(Math.random() * others.length)];
-        let bonus = 0;
-        const rel = relationships.find(r => (r.p1 === p1.id && r.p2 === p2.id) || (r.p1 === p2.id && r.p2 === p1.id));
-        if (rel) bonus = relTypes.find(t => t.name === rel.type)?.bonus || 0;
-
-        const s1 = (p1.work * 1.2) + p1.talk + (p1.luck * Math.random() * 10) + bonus;
-        const s2 = (p2.work * 1.2) + p2.talk + (p2.luck * Math.random() * 10);
-
-        addLog(`⚔️ 승진 배틀: ${p1.name} VS ${p2.name}`, "log-battle");
-        if (s1 > s2) {
-            p1.rankIdx++; p1.exp = 0;
-            addLog(`🏆 ${p1.name} 승리! [${ranks[p1.rankIdx]}] 승진`, "log-info");
-        } else {
-            p1.exp = Math.max(0, p1.exp - 50);
-            addLog(`📉 ${p1.name} 패배... 승급 실패`, "log-danger");
-        }
-    }
-
-    function updateUI() {
-        document.getElementById('money').innerText = Math.floor(money).toLocaleString();
-        document.getElementById('days').innerText = days;
-        const list = document.getElementById('char-list');
-        list.innerHTML = characters.map(c => `
-            <div class="char-item" onclick="openRelEdit(${c.id})">
-                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                    <strong>${c.name}</strong>
-                    <span style="font-size:0.7rem; color:white; background:var(--primary); padding:2px 6px; border-radius:5px;">${ranks[c.rankIdx]}</span>
+    function uUI() {
+        document.getElementById('mDisp').innerText = Math.floor(st.m).toLocaleString();
+        document.getElementById('dDisp').innerText = st.d;
+        document.getElementById('eGrid').innerHTML = st.e.map(e => `
+            <div class="card ${e.isFired?'fired':''}" onclick="opM(${e.id})">
+                <small style="color:var(--primary); font-weight:bold;">${RANKS[e.rIdx]}</small>
+                <input class="name-input" value="${e.n}" onchange="st.e.find(x=>x.id==${e.id}).n=this.value" onclick="event.stopPropagation()" title="클릭하여 이름 수정">
+                <small style="color:#aaa; display:block;">${e.trait}</small>
+                ${e.club ? `<div class="club-tag">${e.club}</div>` : ''}
+                <div class="stat-grid">
+                    <div>T ${bar(e.tech, 'var(--primary)')}</div><div>S ${bar(e.sale, 'var(--secondary)')}</div>
+                    <div>M ${bar(e.mtl, 'var(--accent)')}</div><div>H ${bar(e.hp, 'var(--point)')}</div>
                 </div>
-                <div class="stat-group">
-                    <div class="stat-tag"><span class="stat-label">💼업무</span><span class="stat-val">${c.work.toFixed(1)}</span></div>
-                    <div class="stat-tag"><span class="stat-label">🗣️화술</span><span class="stat-val">${c.talk.toFixed(1)}</span></div>
-                    <div class="stat-tag"><span class="stat-label">📈경험</span><span class="stat-val">${c.exp}</span></div>
-                    <div class="stat-tag"><span class="stat-label">🍀운</span><span class="stat-val">${c.luck}</span></div>
-                </div>
-                <div class="status-bar-group">
-                    <div class="status-bar"><div class="status-fill" style="width:${c.stress}%; background:var(--warning);"></div></div>
-                    <div class="status-bar"><div class="status-fill" style="width:${c.health}%; background:var(--danger);"></div></div>
-                </div>
-            </div>`).join('');
-    }
+            </div>`).join('') + `<div class="card" onclick="hire()" style="border:2px dashed #ddd; display:flex; justify-content:center; align-items:center; color:#ccc; font-weight:bold;">+ 사원 영입</div>`;
 
-    function openRelEdit(id) {
-        selectedCharId = id;
-        const char = characters.find(c => c.id === id);
-        const others = characters.filter(o => o.id !== id);
-        document.getElementById('modal-char-name').innerText = `${char.name} 관리`;
-        document.getElementById('edit-name').value = char.name;
-        document.getElementById('target-select').innerHTML = others.map(o => `<option value="${o.id}">${o.name} (${ranks[o.rankIdx]})</option>`).join('') || '<option value="">대상 없음</option>';
-        document.getElementById('type-select').innerHTML = relTypes.map(r => `<option value="${r.name}">${r.emoji} ${r.name}</option>`).join('');
-        document.getElementById('edit-modal').style.display = 'block';
-        document.getElementById('overlay').style.display = 'block';
-    }
-
-    function applyChanges() {
-        const char = characters.find(c => c.id === selectedCharId);
-        char.name = document.getElementById('edit-name').value;
-        const targetId = parseFloat(document.getElementById('target-select').value);
-        if(targetId) {
-            const p2 = characters.find(c => c.id === targetId);
-            const typeName = document.getElementById('type-select').value;
-            const type = relTypes.find(r => r.name === typeName);
-            updateOrAddRel(char, p2, typeName, type.emoji);
+        let rH = ""; for(let k in st.r) {
+            let ids=k.split('-'); let e1=st.e.find(x=>x.id==ids[0]), e2=st.e.find(x=>x.id==ids[1]);
+            if(e1 && e2 && !e1.isFired && !e2.isFired) {
+                const isAffair = st.r[k] === "불륜";
+                rH += `<div class="rel-item ${isAffair?'rel-bad':''}"><b>${e1.n} ＆ ${e2.n}</b> <span>${st.r[k]}</span></div>`;
+            }
         }
-        closeModal(); updateUI(); saveLocal();
+        document.getElementById('rList').innerHTML = rH || "<p style='text-align:center; color:#ccc; margin-top:50px;'>관계 데이터가 없습니다.</p>";
     }
 
-    function deleteCharacter() {
-        if(!confirm("이 사원을 정말 퇴사시키겠습니까?")) return;
-        characters = characters.filter(c => c.id !== selectedCharId);
-        relationships = relationships.filter(r => r.p1 !== selectedCharId && r.p2 !== selectedCharId);
-        addLog("👋 사원이 회사를 떠났습니다.", "log-danger");
-        closeModal(); updateUI(); saveLocal();
+    function bar(v, c) { return `<div class="stat-bar"><div class="stat-fill" style="width:${Math.min(v,100)}%; background:${c}"></div></div>`; }
+    function log(m, c="") { const b = document.getElementById('lBox'); const d = document.createElement('div'); d.className = `log-entry ${c}`; d.innerHTML = `<small>Day ${st.d}</small><br>${m}`; b.appendChild(d); b.scrollTop = b.scrollHeight; }
+    
+    function opM(id) { 
+        selId=id; const e=st.e.find(x=>x.id===id); if(e.isFired) return; 
+        document.getElementById('editName').value=e.n;
+        const others = st.e.filter(x=>x.id!==id && !x.isFired).map(x=>`<option value="${x.id}">${x.n}</option>`).join('');
+        document.getElementById('btlSel').innerHTML = others; document.getElementById('relSel').innerHTML = others;
+        document.getElementById('relType').innerHTML = RELS.map(r=>`<option value="${r}">${r}</option>`).join('');
+        document.getElementById('mOv').style.display='block'; 
     }
-
-    function openTab(tabId, btn) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        btn.classList.add('active');
-        if(tabId === 'rel-tab') updateRelUI();
+    
+    function applyEdit() { st.e.find(x=>x.id===selId).n = document.getElementById('editName').value; clM(); uUI(); }
+    function clM() { document.getElementById('mOv').style.display='none'; }
+    function deleteEmp(id) { st.e = st.e.filter(x=>x.id!==id); clM(); uUI(); log("🚮 수동 해고로 데이터가 영구 삭제되었습니다."); }
+    function startBattle() { 
+        let p1=st.e.find(x=>x.id===selId), p2=st.e.find(x=>x.id==document.getElementById('btlSel').value);
+        if((p1.tech+p1.sale) > (p2.tech+p2.sale)) { p1.rIdx=Math.min(7, p1.rIdx+1); p2.rIdx=Math.max(0, p2.rIdx-1); log(`⚔️ [배틀] <b>${p1.n}</b> 승리! 승진했습니다.`, "log-urgent"); }
+        else { log(`⚔️ [배틀] <b>${p1.n}</b> 패배... 승진에 실패했습니다.`); }
+        clM(); uUI(); 
     }
-
-    function closeModal() { document.querySelectorAll('.modal, .overlay').forEach(el => el.style.display = 'none'); }
-
-    function addLog(msg, type) {
-        const logBox = document.getElementById('log-container');
-        const entry = document.createElement('div');
-        entry.className = 'log-entry ' + (type || '');
-        entry.innerHTML = `<small>Day ${days}</small> ${msg}`;
-        logBox.prepend(entry);
-        if(logBox.children.length > 50) logBox.lastChild.remove();
-    }
-
-    function updateRelUI() {
-        const list = document.getElementById('rel-list');
-        list.innerHTML = relationships.length === 0 ? "<p>형성된 관계가 없습니다.</p>" : 
-            relationships.map(r => `<div style="padding:8px; border-bottom:1px solid #eee;">${r.p1Name} ${r.emoji} ${r.p2Name} (${r.type})</div>`).join('');
-    }
-
-    function exportMembers() { download({ characters, relationships }, "members.json"); }
-    function exportStatus() { download({ money, days, companyName: document.getElementById('company-name-input').value }, "status.json"); }
-    function download(data, filename) {
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob); a.download = filename; a.click();
-    }
-    function importData(e) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const data = JSON.parse(ev.target.result);
-            if(data.characters) { characters = data.characters; relationships = data.relationships || []; }
-            if(data.money !== undefined) { money = data.money; days = data.days; document.getElementById('company-name-input').value = data.companyName; }
-            updateUI(); addLog("📥 데이터 로드 완료");
-        };
-        reader.readAsText(e.target.files[0]);
-    }
-    function saveLocal() {
-        const data = { money, days, characters, relationships, companyName: document.getElementById('company-name-input').value };
-        localStorage.setItem('pastel_sim_save', JSON.stringify(data));
-    }
-    function resetGame() { if(confirm("초기화할까요?")) { localStorage.clear(); location.reload(); } }
-
-    window.onload = () => {
-        const saved = localStorage.getItem('pastel_sim_save');
-        if (saved) {
-            const d = JSON.parse(saved);
-            money = d.money; days = d.days; characters = d.characters || [];
-            relationships = d.relationships || [];
-            document.getElementById('company-name-input').value = d.companyName || "회사";
-            updateUI();
-        }
-    };
+    function manualRel() { st.r[[selId, document.getElementById('relSel').value].sort().join('-')] = document.getElementById('relType').value; clM(); uUI(); log("✨ 관계를 수동으로 설정했습니다."); }
+    function toggleAuto() { if(autoInt) { clearInterval(autoInt); autoInt=null; document.getElementById('autoBtn').innerText="자동 시작"; } else { autoInt=setInterval(next, 1200); document.getElementById('autoBtn').innerText="중지"; } }
+    function tab(t) { document.querySelectorAll('.page, .nav button').forEach(x=>x.classList.remove('active')); document.getElementById(`p-${t}`).classList.add('active'); document.getElementById(`n-${t}`).classList.add('active'); }
+    function saveData(t) { let d=t==='HR'?st.e:st.m; let b=new Blob([JSON.stringify(d)],{type:'application/json'}); let a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`${t}_DATA.json`; a.click(); }
+    
+    uUI();
 </script>
 </body>
 </html>
